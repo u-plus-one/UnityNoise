@@ -79,3 +79,25 @@ settings.persistence = 0.5;
 settings.lacunarity = 2.0;
 float noise = ComputePerlinNoise3D(position.xyz, settings);
 ```
+
+### Texture Assets
+
+Noise Textures can be generated as procedural assets and can be used just like regular 2D textures.
+
+To create a new noise texture, go to `Assets/Create/Texture/Noise Texture`
+
+Noise Textures come with the following settings:
+
+|Parameter      |Description|
+|---------------|------------|
+|Resolution     |Texture width / height|
+|Use 3D Noise   |Whether to sample from 3D noise to generate the 2D texture|
+|Scale          |Number of noise "cells" in both axes, higher numbers generate more noise|
+|Seed           |Random seed to use for noise generation|
+|Depth          |General contrast of the genreated noise|
+|Tiled          |Generates a texture that can repeat seamlessly|
+|**Fractal Settings**|Various settings releated to fractal noise generation|
+|**Mapping Settings**|Various settings related to remapping input values or mapping to a color gradient|
+|**Texture Settings**|Common Texture Importer settings|
+
+A histogram view is also provided to see the distribution of noise values across the entire texture.
