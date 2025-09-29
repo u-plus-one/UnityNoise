@@ -23,7 +23,7 @@ All noise generators also include functions for generating a fractal version.
 
 Open the Package Manager window, click on "Add Package from Git URL ...", then enter the following:
 ```
-https://github.com/d3tonat0r/unitynoise.git
+https://github.com/u-plus-one/unitynoise.git
 ```
 
 ### Option 2: Manually Editing packages.json
@@ -31,7 +31,7 @@ https://github.com/d3tonat0r/unitynoise.git
 Add the following line to your project's `Packages/manifest.json`:
 
 ```json
-"com.github.d3tonat0r.unitynoise": "https://github.com/d3tonat0r/unitynoise.git"
+"com.github.u-plus-one.unitynoise": "https://github.com/u-plus-one/unitynoise.git"
 ```
 
 ### Option 3: Manual Installation (not recommended)
