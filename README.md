@@ -34,7 +34,7 @@ Add the following line to your project's `Packages/manifest.json`:
 "com.github.d3tonat0r.unitynoise": "https://github.com/d3tonat0r/unitynoise.git"
 ```
 
-### Option 3: Manual Installation
+### Option 3: Manual Installation (not recommended)
 
 You can also download this repository and extract the ZIP file anywhere inside your project's Assets folder.
 
