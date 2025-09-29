@@ -31,7 +31,7 @@ https://github.com/d3tonat0r/unitynoise.git
 Add the following line to your project's `Packages/manifest.json`:
 
 ```json
-"com.example.package": "https://github.com/d3tonat0r/unitynoise.git"
+"com.github.d3tonat0r.unitynoise": "https://github.com/d3tonat0r/unitynoise.git"
 ```
 
 ### Option 3: Manual Installation
