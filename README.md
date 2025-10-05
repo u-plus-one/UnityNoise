@@ -64,7 +64,7 @@ float noise = PerlinNoise.Instance.GetNoise3D(pos, fractal);
 
 Add a reference to the Include file you want to use, e.g:
 ```
-#include "Packages/com.github.d3tonat0r.unitynoise/Shaders/PerlinNoise.cginc"
+#include "Packages/com.github.u-plus-one.unitynoise/Shaders/PerlinNoise.cginc"
 ```
 
 Example:
