@@ -21,7 +21,7 @@ All noise generators also include functions for generating a fractal version.
 
 ### Option 1: Unity Package Manager
 
-Open the Package Manager window, click on "Add Package from Git URL ...", then enter the following:
+Open the Package Manager window, click on `Add Package from Git URL ...`, then enter the following:
 ```
 https://github.com/u-plus-one/unitynoise.git
 ```
@@ -50,6 +50,7 @@ using UnityNoise;
 
 -----
 
+//Position to sample the noise at
 Vector3 pos = new Vector3(0.5f, 1.0f, 2.0f);
 
 //Simple 3D Perlin 
@@ -62,9 +63,19 @@ float noise = PerlinNoise.Instance.GetNoise3D(pos, fractal);
 
 ### In Shaders
 
-Add a reference to the Include file you want to use, e.g:
-```
+Add a reference to the include file(s) you want to use:
+```hlsl
+//Perlin Noise
 #include "Packages/com.github.u-plus-one.unitynoise/Shaders/PerlinNoise.cginc"
+
+//Simplex Noise
+#include "Packages/com.github.u-plus-one.unitynoise/Shaders/SimplexNoise.cginc"
+
+//Voronoi Noise
+#include "Packages/com.github.u-plus-one.unitynoise/Shaders/VoronoiNoise.cginc"
+
+//Simple Cellular Noise
+#include "Packages/com.github.u-plus-one.unitynoise/Shaders/CellularNoise.cginc"
 ```
 
 Example:
@@ -80,6 +91,17 @@ settings.lacunarity = 2.0;
 float noise = ComputePerlinNoise3D(position.xyz, settings);
 ```
 
+#### Using Half Precision
+
+When targeting older GPUs or mobile devices, you may want to use half precision noise by defining `HALF_PRECISION` in your shader **before including the noise function files**:
+
+```hlsl
+//Make sure this comes BEFORE including the actual shader functions
+#define HALF_PRECISION
+//Include the noise functions, using half precision
+#include "Packages/com.github.u-plus-one.unitynoise/Shaders/[...].cginc"
+```
+
 ### Texture Assets
 
 Noise Textures can be generated as procedural assets and can be used just like regular 2D textures.
@@ -90,14 +112,22 @@ Noise Textures come with the following settings:
 
 |Parameter      |Description|
 |---------------|------------|
-|Resolution     |Texture width / height|
-|Use 3D Noise   |Whether to sample from 3D noise to generate the 2D texture|
-|Scale          |Number of noise "cells" in both axes, higher numbers generate more noise|
-|Seed           |Random seed to use for noise generation|
-|Depth          |General contrast of the genreated noise|
-|Tiled          |Generates a texture that can repeat seamlessly|
-|**Fractal Settings**|Various settings releated to fractal noise generation|
-|**Mapping Settings**|Various settings related to remapping input values or mapping to a color gradient|
+|Resolution     |Texture width / height.|
+|Use 3D Noise   |Whether to sample from 3D noise to generate the 2D texture.|
+|Scale          |Number of noise "cells" in both axes, higher numbers generate more noise.|
+|Seed           |Random seed to use for noise generation.|
+|Depth          |General contrast of the genreated noise.|
+|Tiled          |Generates a texture that can repeat seamlessly.|
+|**Fractal Settings**|Various settings releated to fractal noise generation.|
+|**Mapping Settings**|Various settings related to remapping input values or mapping to a color gradient.|
 |**Texture Settings**|Common Texture Importer settings|
 
 A histogram view is also provided to see the distribution of noise values across the entire texture.
+
+### Fractal Parameters Terminology
+|Parameter      |Description|
+|---------------|-----------|
+|Octaves|The number of fractal noise layers added together. Higher values create more detailed noise. High octave counts can have a significant performance hit.|
+|Lacunarity|The factor by which the frequency increases for each subsequent octave. Usually set to `2.0`, indicating that each octave doubles in frequency relative to the last.|
+|Persistence|The factor by which the amplitude decreases per octave. Higher values generate rougher noise. Usually set to `0.5`.|
+
