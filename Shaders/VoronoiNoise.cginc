@@ -1,13 +1,13 @@
 #include "Common.cginc"
 
-half2 GetCell(float d, half2 pos)
+half2 GetCell(vec1 d, half2 pos)
 {
 	half x = hash(pos.x * 21.73 + pos.y * 32.19) * 0.37 * d;
 	half y = hash(pos.x * 17.37 + pos.y * 9.73) * 0.37 * d;
 	return pos + half2(x, y);
 }
 
-half3 GetCell(float d, half3 pos)
+half3 GetCell(vec1 d, half3 pos)
 {
 	half x = hash(pos.x * 21.73 + pos.y * 32.19 + pos.z * 47.93) * 0.37 * d;
 	half y = hash(pos.x * 17.37 + pos.y * 9.73 + pos.z * 7.21) * 0.37 * d;
@@ -15,7 +15,7 @@ half3 GetCell(float d, half3 pos)
 	return pos + half3(x, y, z);
 }
 
-half4 GetCell(float d, half4 pos)
+half4 GetCell(vec1 d, half4 pos)
 {
 	half x = hash(pos.x * 21.73 + pos.y * 32.19 + pos.z * 47.93) * 0.37 * d;
 	half y = hash(pos.x * 17.37 + pos.y * 9.73 + pos.z * 7.21) * 0.37 * d;
@@ -28,32 +28,32 @@ half4 GetCell(float d, half4 pos)
 #define VORONOI_DISTANCE_FUNC distance
 #endif
 
-float manhattanDistance(float2 a, float2 b)
+vec1 manhattanDistance(vec2 a, vec2 b)
 {
 	return (abs(b.x - a.x) + abs(b.y - a.y)) * 0.5;
 }
 
-float manhattanDistance(float3 a, float3 b)
+vec1 manhattanDistance(vec3 a, vec3 b)
 {
 	return (abs(b.x - a.x) + abs(b.y - a.y) + abs(b.z - a.z)) * 0.5;
 }
 
-float manhattanDistance(float4 a, float4 b)
+vec1 manhattanDistance(vec4 a, vec4 b)
 {
 	return (abs(b.x - a.x) + abs(b.y - a.y) + abs(b.z - a.z) + abs(b.w - a.w)) * 0.5;
 }
 
-float chebyshevDistance(float2 a, float2 b)
+vec1 chebyshevDistance(vec2 a, vec2 b)
 {
 	return max(abs(b.x - a.x), abs(b.y - a.y));
 }
 
-float chebyshevDistance(float3 a, float3 b)
+vec1 chebyshevDistance(vec3 a, vec3 b)
 {
 	return max(max(abs(b.x - a.x), abs(b.y - a.y)), abs(b.z - a.z));
 }
 
-float chebyshevDistance(float4 a, float4 b)
+vec1 chebyshevDistance(vec4 a, vec4 b)
 {
 	return max(max(max(abs(b.x - a.x), abs(b.y - a.y)), abs(b.z - a.z)), abs(b.w - a.w));
 }
@@ -91,7 +91,7 @@ half nearest(half min, inout half4 nearestCell, half4 pos, half4 cell)
 	return min;
 }
 
-half2 GetVoronoiNoise1D(float pos, float d)
+half2 GetVoronoiNoise1D(vec1 pos, vec1 d)
 {
 	int x1 = floor(pos);
 	int x2 = x1 + 1;
@@ -107,7 +107,7 @@ half2 GetVoronoiNoise1D(float pos, float d)
 	return half2(min * 1.8 - 1.0, hash(nearestCell));
 }
 
-half2 GetVoronoiNoise2D(float2 pos, float s)
+half2 GetVoronoiNoise2D(vec2 pos, vec1 s)
 {
 	int x1 = floor(pos.x);
 	int x2 = x1 + 1;
@@ -138,7 +138,7 @@ half2 GetVoronoiNoise2D(float2 pos, float s)
 	return half2(min * 1.8 - 1.0, hash(nearestCell));
 }
 
-half2 GetVoronoiNoise3D(float3 pos, float s)
+half2 GetVoronoiNoise3D(vec3 pos, vec1 s)
 {
 	int x1 = floor(pos.x);
 	int x2 = x1 + 1;
@@ -208,7 +208,7 @@ half2 GetVoronoiNoise3D(float3 pos, float s)
 	return half2(min * 1.8 - 1.0, hash(nearestCell));
 }
 
-half2 GetVoronoiNoise4D(float4 pos, float s)
+half2 GetVoronoiNoise4D(vec4 pos, vec1 s)
 {
 	int x1 = floor(pos.x);
 	int x2 = x1 + 1;
@@ -389,54 +389,54 @@ half2 GetVoronoiNoise4D(float4 pos, float s)
 	return half2(min * 1.8 - 1.0, hash(nearestCell));
 }
 
-float2 ComputeVoronoiNoise1D(float pos, FractalSettings settings)
+vec2 ComputeVoronoiNoise1D(vec1 pos, FractalSettings settings)
 {
-	float2 v = 0.0;
-	float intensity = 1.0;
+	vec2 v = 0.0;
+	vec1 intensity = 1.0;
 	FOR_FRACTAL
 	{
 		addNoise(v, GetVoronoiNoise1D(pos, 1.0), intensity);
 		pos *= settings.lacunarity;
 		intensity *= settings.persistence;
 	}
-	return float2(saturate(v * 0.5 + 0.5));
+	return vec2(saturate(v * 0.5 + 0.5));
 }
 
-float2 ComputeVoronoiNoise2D(float2 pos, FractalSettings settings)
+vec2 ComputeVoronoiNoise2D(vec2 pos, FractalSettings settings)
 {
-	float2 v = 0.0;
-	float intensity = 1.0;
+	vec2 v = 0.0;
+	vec1 intensity = 1.0;
 	FOR_FRACTAL
 	{
 		addNoise(v, GetVoronoiNoise2D(pos, 1.0), intensity);
 		pos *= settings.lacunarity;
 		intensity *= settings.persistence;
 	}
-	return float2(saturate(v * 0.5 + 0.5));
+	return vec2(saturate(v * 0.5 + 0.5));
 }
 
-float2 ComputeVoronoiNoise3D(float3 pos, FractalSettings settings)
+vec2 ComputeVoronoiNoise3D(vec3 pos, FractalSettings settings)
 {
-	float2 v = 0.0;
-	float intensity = 1.0;
+	vec2 v = 0.0;
+	vec1 intensity = 1.0;
 	FOR_FRACTAL
 	{
 		addNoise(v, GetVoronoiNoise3D(pos, 1.0), intensity);
 		pos *= settings.lacunarity;
 		intensity *= settings.persistence;
 	}
-	return float2(saturate(v * 0.5 + 0.5));
+	return vec2(saturate(v * 0.5 + 0.5));
 }
 
-float2 ComputeVoronoiNoise4D(float4 pos, FractalSettings settings)
+vec2 ComputeVoronoiNoise4D(vec4 pos, FractalSettings settings)
 {
-	float2 v = 0.0;
-	float intensity = 1.0;
+	vec2 v = 0.0;
+	vec1 intensity = 1.0;
 	FOR_FRACTAL
 	{
 		addNoise(v, GetVoronoiNoise4D(pos, 1.0), intensity);
 		pos *= settings.lacunarity;
 		intensity *= settings.persistence;
 	}
-	return float2(saturate(v * 0.5 + 0.5));
+	return vec2(saturate(v * 0.5 + 0.5));
 }
