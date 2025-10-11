@@ -1,13 +1,13 @@
 {
-  "name": "com.github.d3tonat0r.unitynoise",
+  "name": "com.github.u-plus-one.unitynoise",
   "version": "0.0.1",
   "displayName": "Unity Noise",
   "description": "A collection of functions for generating noise both in scripts and shaders",
   "unity": "2019.4",
   "category": "",
   "author": {
-    "name": "D3TONAT0R",
-    "url": "https://github.com/d3tonat0r"
+    "name": "u+1",
+    "url": "https://github.com/u-plus-one"
   },
   "hideInEditor": false
 }
