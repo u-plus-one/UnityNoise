@@ -282,9 +282,9 @@ vec1 GetSimplexNoise3D(vec3 pos)
 	vec1 z3 = z0 - 1.0 + 3.0 * G3;
 
 	// Wrap the integer indices at 256, to avoid indexing perm[] out of bounds
-	int ii = mod(i, 256);
-	int jj = mod(j, 256);
-	int kk = mod(k, 256);
+	uint ii = mod(i, 256);
+	uint jj = mod(j, 256);
+	uint kk = mod(k, 256);
 
 	// Calculate the contribution from the four corners
 	vec1 t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;

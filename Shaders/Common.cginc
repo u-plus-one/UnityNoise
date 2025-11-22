@@ -44,7 +44,7 @@ half hash(vec3 pos)
 	return hash(vec4(pos, 0.0));
 }
 
-int mod(int x, int m)
+uint mod(int x, uint m)
 {
 	int a = x % m;
 	return a < 0 ? a + m : a;
