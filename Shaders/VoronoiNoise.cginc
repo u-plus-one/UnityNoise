@@ -1,13 +1,68 @@
 #include "Common.cginc"
 
-half2 GetCell(vec1 d, half2 pos)
+struct VoronoiResult1D {
+	float distance;
+	float cell;
+	float cellPos;
+};
+struct VoronoiResult1D_half {
+	half distance;
+	half cell;
+	half cellPos;
+};
+
+struct VoronoiResult2D {
+	float distance;
+	float cell;
+	float2 cellPos;
+};
+struct VoronoiResult2D_half
+{
+	half distance;
+	half cell;
+	half2 cellPos;
+};
+
+struct VoronoiResult3D
+{
+	float distance;
+	float cell;
+	float3 cellPos;
+};
+struct VoronoiResult3D_half
+{
+	half distance;
+	half cell;
+	half3 cellPos;
+};
+
+struct VoronoiResult4D
+{
+	float distance;
+	float cell;
+	float4 cellPos;
+};
+struct VoronoiResult4D_half
+{
+	half distance;
+	half cell;
+	half4 cellPos;
+};
+
+half GetCell(float d, half pos)
+{
+	half x = hash(pos.x * 21.73)* 0.37 * d;
+	return pos + x;
+}
+
+half2 GetCell(float d, half2 pos)
 {
 	half x = hash(pos.x * 21.73 + pos.y * 32.19) * 0.37 * d;
 	half y = hash(pos.x * 17.37 + pos.y * 9.73) * 0.37 * d;
 	return pos + half2(x, y);
 }
 
-half3 GetCell(vec1 d, half3 pos)
+half3 GetCell(float d, half3 pos)
 {
 	half x = hash(pos.x * 21.73 + pos.y * 32.19 + pos.z * 47.93) * 0.37 * d;
 	half y = hash(pos.x * 17.37 + pos.y * 9.73 + pos.z * 7.21) * 0.37 * d;
@@ -15,7 +70,7 @@ half3 GetCell(vec1 d, half3 pos)
 	return pos + half3(x, y, z);
 }
 
-half4 GetCell(vec1 d, half4 pos)
+half4 GetCell(float d, half4 pos)
 {
 	half x = hash(pos.x * 21.73 + pos.y * 32.19 + pos.z * 47.93) * 0.37 * d;
 	half y = hash(pos.x * 17.37 + pos.y * 9.73 + pos.z * 7.21) * 0.37 * d;
@@ -28,34 +83,55 @@ half4 GetCell(vec1 d, half4 pos)
 #define VORONOI_DISTANCE_FUNC distance
 #endif
 
-vec1 manhattanDistance(vec2 a, vec2 b)
+float manhattanDistance(float a, float b)
 {
-	return (abs(b.x - a.x) + abs(b.y - a.y)) * 0.5;
+	return abs(b-a);
 }
 
-vec1 manhattanDistance(vec3 a, vec3 b)
+float manhattanDistance(float2 a, float2 b)
 {
-	return (abs(b.x - a.x) + abs(b.y - a.y) + abs(b.z - a.z)) * 0.5;
+	return (abs(b.x - a.x) + abs(b.y - a.y));
 }
 
-vec1 manhattanDistance(vec4 a, vec4 b)
+float manhattanDistance(float3 a, float3 b)
 {
-	return (abs(b.x - a.x) + abs(b.y - a.y) + abs(b.z - a.z) + abs(b.w - a.w)) * 0.5;
+	return (abs(b.x - a.x) + abs(b.y - a.y) + abs(b.z - a.z));
 }
 
-vec1 chebyshevDistance(vec2 a, vec2 b)
+float manhattanDistance(float4 a, float4 b)
+{
+	return (abs(b.x - a.x) + abs(b.y - a.y) + abs(b.z - a.z) + abs(b.w - a.w));
+}
+
+float chebyshevDistance(float a, float b)
+{
+	return abs(b-a);
+}
+
+float chebyshevDistance(float2 a, float2 b)
 {
 	return max(abs(b.x - a.x), abs(b.y - a.y));
 }
 
-vec1 chebyshevDistance(vec3 a, vec3 b)
+float chebyshevDistance(float3 a, float3 b)
 {
 	return max(max(abs(b.x - a.x), abs(b.y - a.y)), abs(b.z - a.z));
 }
 
-vec1 chebyshevDistance(vec4 a, vec4 b)
+float chebyshevDistance(float4 a, float4 b)
 {
 	return max(max(max(abs(b.x - a.x), abs(b.y - a.y)), abs(b.z - a.z)), abs(b.w - a.w));
+}
+
+half nearest(half min, inout half nearestCell, half pos, half cell)
+{
+	half dist = VORONOI_DISTANCE_FUNC(pos, cell);
+	if (dist < min)
+	{
+		min = dist;
+		nearestCell = cell;
+	}
+	return min;
 }
 
 half nearest(half min, inout half2 nearestCell, half2 pos, half2 cell)
@@ -91,24 +167,30 @@ half nearest(half min, inout half4 nearestCell, half4 pos, half4 cell)
 	return min;
 }
 
-half2 GetVoronoiNoise1D(vec1 pos, vec1 d)
+VoronoiResult1D GetVoronoiNoise1D(float pos, float scale, float d)
 {
-	int x1 = floor(pos);
+	VoronoiResult1D result;
+	int x1 = floor(pos * scale);
 	int x2 = x1 + 1;
 	int x0 = x1 - 1;
-	half c0 = GetCell(d, half2(x0, 0));
-	half c1 = GetCell(d, half2(x1, 0));
-	half c2 = GetCell(d, half2(x2, 0));
+	half c0 = GetCell(d, x0);
+	half c1 = GetCell(d, x1);
+	half c2 = GetCell(d, x2);
 	half min = 999.99;
-	half2 nearestCell = half2(0.0, 0.0);
+	half nearestCell = half(0.0); //maybe change back to: half2 nearestCell = half2(0.0, 0.0);
 	min = nearest(min, nearestCell, pos, c0);
 	min = nearest(min, nearestCell, pos, c1);
 	min = nearest(min, nearestCell, pos, c2);
-	return half2(min * 1.8 - 1.0, hash(nearestCell));
+	result.distance = min * 1.8 - 1.0;
+	result.cell = hash(nearestCell);
+	result.cellPos = nearestCell;
+	return result;
 }
 
-half2 GetVoronoiNoise2D(vec2 pos, vec1 s)
+VoronoiResult2D GetVoronoiNoise2D(float2 pos, float2 scale, float s)
 {
+	VoronoiResult2D result;
+	pos = pos * scale;
 	int x1 = floor(pos.x);
 	int x2 = x1 + 1;
 	int x0 = x1 - 1;
@@ -124,7 +206,7 @@ half2 GetVoronoiNoise2D(vec2 pos, vec1 s)
 	half2 c02 = GetCell(s, half2(x0, y2));
 	half2 c12 = GetCell(s, half2(x1, y2));
 	half2 c22 = GetCell(s, half2(x2, y2));
-	half min = 99.99;
+	half min = 99.99; //min distance
 	half2 nearestCell = half2(0.0, 0.0);
 	min = nearest(min, nearestCell, pos, c00);
 	min = nearest(min, nearestCell, pos, c10);
@@ -135,11 +217,16 @@ half2 GetVoronoiNoise2D(vec2 pos, vec1 s)
 	min = nearest(min, nearestCell, pos, c02);
 	min = nearest(min, nearestCell, pos, c12);
 	min = nearest(min, nearestCell, pos, c22);
-	return half2(min * 1.8 - 1.0, hash(nearestCell));
+	result.distance = min * 1.8 - 1.0;
+	result.cell = hash(nearestCell);
+	result.cellPos = nearestCell;
+	return result;
 }
 
-half2 GetVoronoiNoise3D(vec3 pos, vec1 s)
+VoronoiResult3D GetVoronoiNoise3D(float3 pos, float3 scale, float s)
 {
+	VoronoiResult3D result;
+	pos = pos * scale;
 	int x1 = floor(pos.x);
 	int x2 = x1 + 1;
 	int x0 = x1 - 1;
@@ -205,11 +292,16 @@ half2 GetVoronoiNoise3D(vec3 pos, vec1 s)
 	min = nearest(min, nearestCell, pos, c022);
 	min = nearest(min, nearestCell, pos, c122);
 	min = nearest(min, nearestCell, pos, c222);
-	return half2(min * 1.8 - 1.0, hash(nearestCell));
+	result.distance = min * 1.8 - 1.0;
+	result.cell = hash(nearestCell);
+	result.cellPos = nearestCell;
+	return result;
 }
 
-half2 GetVoronoiNoise4D(vec4 pos, vec1 s)
+VoronoiResult4D GetVoronoiNoise4D(float4 pos, float4 scale, float s)
 {
+	VoronoiResult4D result;
+	pos = pos * scale;
 	int x1 = floor(pos.x);
 	int x2 = x1 + 1;
 	int x0 = x1 - 1;
@@ -386,57 +478,92 @@ half2 GetVoronoiNoise4D(vec4 pos, vec1 s)
 	min = nearest(min, nearestCell, pos, c0222);
 	min = nearest(min, nearestCell, pos, c1222);
 	min = nearest(min, nearestCell, pos, c2222);
-	return half2(min * 1.8 - 1.0, hash(nearestCell));
+	result.distance = min * 1.8 - 1.0;
+	result.cell = hash(nearestCell);
+	result.cellPos = nearestCell;
+	return result;
 }
 
-vec2 ComputeVoronoiNoise1D(vec1 pos, FractalSettings settings)
+VoronoiResult1D ComputeVoronoiNoise1D(float pos, float scale, FractalSettings settings)
 {
-	vec2 v = 0.0;
-	vec1 intensity = 1.0;
+	VoronoiResult1D o;
+	float2 v = 0.0;
+	float2 v2;
+	float intensity = 1.0;
 	FOR_FRACTAL
 	{
-		addNoise(v, GetVoronoiNoise1D(pos, 1.0), intensity);
+		o = GetVoronoiNoise1D(pos, scale, 1.0);
+		v2 = float2(o.distance, o.cell);
+		addNoise(v, v2, intensity);
 		pos *= settings.lacunarity;
 		intensity *= settings.persistence;
 	}
-	return vec2(saturate(v * 0.5 + 0.5));
+	v = float2(saturate(v * 0.5 + 0.5));
+	o.distance = v.x;
+	o.cell = v.y;
+	o.cellPos *= 1/scale;
+	return o;
 }
 
-vec2 ComputeVoronoiNoise2D(vec2 pos, FractalSettings settings)
+VoronoiResult2D ComputeVoronoiNoise2D(float2 pos, float2 scale, FractalSettings settings)
 {
-	vec2 v = 0.0;
-	vec1 intensity = 1.0;
+	VoronoiResult2D o;
+	float2 v = 0.0;
+	float2 v2;
+	float intensity = 1.0;
 	FOR_FRACTAL
 	{
-		addNoise(v, GetVoronoiNoise2D(pos, 1.0), intensity);
+		o = GetVoronoiNoise2D(pos, scale, 1.0);
+		v2 = float2(o.distance, o.cell);
+		addNoise(v, v2, intensity);
 		pos *= settings.lacunarity;
 		intensity *= settings.persistence;
 	}
-	return vec2(saturate(v * 0.5 + 0.5));
+	v = float2(saturate(v * 0.5 + 0.5));
+	o.distance = v.x;
+	o.cell = v.y;
+	o.cellPos *= 1/scale;
+	return o;
 }
 
-vec2 ComputeVoronoiNoise3D(vec3 pos, FractalSettings settings)
+VoronoiResult3D ComputeVoronoiNoise3D(float3 pos, float3 scale, FractalSettings settings)
 {
-	vec2 v = 0.0;
-	vec1 intensity = 1.0;
+	VoronoiResult3D o;
+	float2 v = 0.0;
+	float2 v2;
+	float intensity = 1.0;
 	FOR_FRACTAL
 	{
-		addNoise(v, GetVoronoiNoise3D(pos, 1.0), intensity);
+		o = GetVoronoiNoise3D(pos, scale, 1.0);
+		v2 = float2(o.distance, o.cell);
+		addNoise(v, v2, intensity);
 		pos *= settings.lacunarity;
 		intensity *= settings.persistence;
 	}
-	return vec2(saturate(v * 0.5 + 0.5));
+	v = float2(saturate(v * 0.5 + 0.5));
+	o.distance = v.x;
+	o.cell = v.y;
+	o.cellPos *= 1/scale;
+	return o;
 }
 
-vec2 ComputeVoronoiNoise4D(vec4 pos, FractalSettings settings)
+VoronoiResult4D ComputeVoronoiNoise4D(float4 pos, float4 scale, FractalSettings settings)
 {
-	vec2 v = 0.0;
-	vec1 intensity = 1.0;
+	VoronoiResult4D o;
+	float2 v = 0.0;
+	float2 v2;
+	float intensity = 1.0;
 	FOR_FRACTAL
 	{
-		addNoise(v, GetVoronoiNoise4D(pos, 1.0), intensity);
+		o = GetVoronoiNoise4D(pos, scale, 1.0);
+		v2 = float2(o.distance, o.cell);
+		addNoise(v, v2, intensity);
 		pos *= settings.lacunarity;
 		intensity *= settings.persistence;
 	}
-	return vec2(saturate(v * 0.5 + 0.5));
+	v = float2(saturate(v * 0.5 + 0.5));
+	o.distance = v.x;
+	o.cell = v.y;
+	o.cellPos *= 1/scale;
+	return o;
 }
