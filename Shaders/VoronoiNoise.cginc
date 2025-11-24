@@ -1,52 +1,29 @@
 #include "Common.cginc"
 
 struct VoronoiResult1D {
-	float distance;
-	float cell;
-	float cellPos;
-};
-struct VoronoiResult1D_half {
-	half distance;
-	half cell;
-	half cellPos;
+	vec1 distance;
+	vec1 cell;
+	vec1 cellPos;
 };
 
 struct VoronoiResult2D {
-	float distance;
-	float cell;
-	float2 cellPos;
-};
-struct VoronoiResult2D_half
-{
-	half distance;
-	half cell;
-	half2 cellPos;
+	vec1 distance;
+	vec1 cell;
+	vec2 cellPos;
 };
 
 struct VoronoiResult3D
 {
-	float distance;
-	float cell;
-	float3 cellPos;
-};
-struct VoronoiResult3D_half
-{
-	half distance;
-	half cell;
-	half3 cellPos;
+	vec1 distance;
+	vec1 cell;
+	vec3 cellPos;
 };
 
 struct VoronoiResult4D
 {
-	float distance;
-	float cell;
-	float4 cellPos;
-};
-struct VoronoiResult4D_half
-{
-	half distance;
-	half cell;
-	half4 cellPos;
+	vec1 distance;
+	vec1 cell;
+	vec4 cellPos;
 };
 
 half GetCell(float d, half pos)
@@ -83,42 +60,42 @@ half4 GetCell(float d, half4 pos)
 #define VORONOI_DISTANCE_FUNC distance
 #endif
 
-float manhattanDistance(float a, float b)
+vec1 manhattanDistance(vec1 a, vec1 b)
 {
 	return abs(b-a);
 }
 
-float manhattanDistance(float2 a, float2 b)
+vec1 manhattanDistance(vec2 a, vec2 b)
 {
 	return (abs(b.x - a.x) + abs(b.y - a.y));
 }
 
-float manhattanDistance(float3 a, float3 b)
+vec1 manhattanDistance(vec3 a, vec3 b)
 {
 	return (abs(b.x - a.x) + abs(b.y - a.y) + abs(b.z - a.z));
 }
 
-float manhattanDistance(float4 a, float4 b)
+vec1 manhattanDistance(vec4 a, vec4 b)
 {
 	return (abs(b.x - a.x) + abs(b.y - a.y) + abs(b.z - a.z) + abs(b.w - a.w));
 }
 
-float chebyshevDistance(float a, float b)
+vec1 chebyshevDistance(vec1 a, vec1 b)
 {
 	return abs(b-a);
 }
 
-float chebyshevDistance(float2 a, float2 b)
+vec1 chebyshevDistance(vec2 a, vec2 b)
 {
 	return max(abs(b.x - a.x), abs(b.y - a.y));
 }
 
-float chebyshevDistance(float3 a, float3 b)
+vec1 chebyshevDistance(vec3 a, vec3 b)
 {
 	return max(max(abs(b.x - a.x), abs(b.y - a.y)), abs(b.z - a.z));
 }
 
-float chebyshevDistance(float4 a, float4 b)
+vec1 chebyshevDistance(vec4 a, vec4 b)
 {
 	return max(max(max(abs(b.x - a.x), abs(b.y - a.y)), abs(b.z - a.z)), abs(b.w - a.w));
 }
@@ -167,7 +144,7 @@ half nearest(half min, inout half4 nearestCell, half4 pos, half4 cell)
 	return min;
 }
 
-VoronoiResult1D GetVoronoiNoise1D(float pos, float scale, float d)
+VoronoiResult1D GetVoronoiNoise1D(vec1 pos, vec1 scale, vec1 d)
 {
 	VoronoiResult1D result;
 	int x1 = floor(pos * scale);
@@ -187,7 +164,7 @@ VoronoiResult1D GetVoronoiNoise1D(float pos, float scale, float d)
 	return result;
 }
 
-VoronoiResult2D GetVoronoiNoise2D(float2 pos, float2 scale, float s)
+VoronoiResult2D GetVoronoiNoise2D(vec2 pos, vec2 scale, vec1 s)
 {
 	VoronoiResult2D result;
 	pos = pos * scale;
@@ -223,7 +200,7 @@ VoronoiResult2D GetVoronoiNoise2D(float2 pos, float2 scale, float s)
 	return result;
 }
 
-VoronoiResult3D GetVoronoiNoise3D(float3 pos, float3 scale, float s)
+VoronoiResult3D GetVoronoiNoise3D(vec3 pos, vec3 scale, vec1 s)
 {
 	VoronoiResult3D result;
 	pos = pos * scale;
@@ -298,7 +275,7 @@ VoronoiResult3D GetVoronoiNoise3D(float3 pos, float3 scale, float s)
 	return result;
 }
 
-VoronoiResult4D GetVoronoiNoise4D(float4 pos, float4 scale, float s)
+VoronoiResult4D GetVoronoiNoise4D(vec4 pos, vec4 scale, vec1 s)
 {
 	VoronoiResult4D result;
 	pos = pos * scale;
@@ -484,7 +461,7 @@ VoronoiResult4D GetVoronoiNoise4D(float4 pos, float4 scale, float s)
 	return result;
 }
 
-VoronoiResult1D ComputeVoronoiNoise1D(float pos, float scale, FractalSettings settings)
+VoronoiResult1D ComputeVoronoiNoise1D(vec1 pos, vec1 scale, FractalSettings settings)
 {
 	VoronoiResult1D o;
 	float2 v = 0.0;
@@ -501,58 +478,60 @@ VoronoiResult1D ComputeVoronoiNoise1D(float pos, float scale, FractalSettings se
 	v = float2(saturate(v * 0.5 + 0.5));
 	o.distance = v.x;
 	o.cell = v.y;
-	o.cellPos *= 1/scale;
+	o.cellPos *= 1/scale; //TODO: figure out if this is really needed
 	return o;
 }
 
-VoronoiResult2D ComputeVoronoiNoise2D(float2 pos, float2 scale, FractalSettings settings)
+VoronoiResult2D ComputeVoronoiNoise2D(vec2 pos, vec2 scale, FractalSettings settings)
 {
 	VoronoiResult2D o;
-	float2 v = 0.0;
-	float2 v2;
-	float intensity = 1.0;
+	vec2 v = 0.0;
+	vec2 v2;
+	vec1 intensity = 1.0;
 	FOR_FRACTAL
 	{
 		o = GetVoronoiNoise2D(pos, scale, 1.0);
-		v2 = float2(o.distance, o.cell);
+		v2 = vec2(o.distance, o.cell);
 		addNoise(v, v2, intensity);
 		pos *= settings.lacunarity;
 		intensity *= settings.persistence;
 	}
-	v = float2(saturate(v * 0.5 + 0.5));
+	v = vec2(saturate(v * 0.5 + 0.5));
 	o.distance = v.x;
 	o.cell = v.y;
-	o.cellPos *= 1/scale;
+	o.cellPos *= 1/scale; //TODO: figure out if this is really needed
 	return o;
 }
 
-VoronoiResult3D ComputeVoronoiNoise3D(float3 pos, float3 scale, FractalSettings settings)
+VoronoiResult3D ComputeVoronoiNoise3D(vec3 pos, vec3 scale, FractalSettings settings)
 {
+	pos *= scale;
+	scale = vec3(1,1,1);
 	VoronoiResult3D o;
-	float2 v = 0.0;
-	float2 v2;
-	float intensity = 1.0;
+	vec2 v = 0.0;
+	vec2 v2;
+	vec1 intensity = 1.0;
 	FOR_FRACTAL
 	{
 		o = GetVoronoiNoise3D(pos, scale, 1.0);
-		v2 = float2(o.distance, o.cell);
+		v2 = vec2(o.distance, o.cell);
 		addNoise(v, v2, intensity);
 		pos *= settings.lacunarity;
 		intensity *= settings.persistence;
 	}
-	v = float2(saturate(v * 0.5 + 0.5));
+	v = vec2(saturate(v * 0.5 + 0.5));
 	o.distance = v.x;
 	o.cell = v.y;
-	o.cellPos *= 1/scale;
+	o.cellPos *= 1/scale; //TODO: figure out if this is really needed
 	return o;
 }
 
-VoronoiResult4D ComputeVoronoiNoise4D(float4 pos, float4 scale, FractalSettings settings)
+VoronoiResult4D ComputeVoronoiNoise4D(vec4 pos, vec4 scale, FractalSettings settings)
 {
 	VoronoiResult4D o;
-	float2 v = 0.0;
-	float2 v2;
-	float intensity = 1.0;
+	vec2 v = 0.0;
+	vec2 v2;
+	vec1 intensity = 1.0;
 	FOR_FRACTAL
 	{
 		o = GetVoronoiNoise4D(pos, scale, 1.0);
@@ -561,9 +540,9 @@ VoronoiResult4D ComputeVoronoiNoise4D(float4 pos, float4 scale, FractalSettings 
 		pos *= settings.lacunarity;
 		intensity *= settings.persistence;
 	}
-	v = float2(saturate(v * 0.5 + 0.5));
+	v = vec2(saturate(v * 0.5 + 0.5));
 	o.distance = v.x;
 	o.cell = v.y;
-	o.cellPos *= 1/scale;
+	o.cellPos *= 1/scale; //TODO: figure out if this is really needed
 	return o;
 }
